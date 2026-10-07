@@ -1,7 +1,9 @@
 """Public portfolio demo. Requests never persist applicant data on the server."""
 
 from io import BytesIO
+import os
 import re
+from urllib.parse import urlparse
 from zipfile import ZipFile
 
 from django.http import HttpResponse, JsonResponse
@@ -10,6 +12,7 @@ from django.views.decorators.http import require_POST
 from openpyxl import Workbook, load_workbook
 
 from .ml_utils import predecir
+from .demo_data import example_results
 
 
 FIELDS = (
@@ -62,12 +65,31 @@ def _summary(case, state, probability):
     return {
         "dni": case["dni"], "name": case["nombre"], "estado": state,
         "probabilidad": f"{probability:.2f}%", "loan_amount": case["prestamo"],
-        "cibil_score": case["credito"],
+        "cibil_score": case["credito"], "source": "Tu sesión",
+    }
+
+
+def _all_results(request):
+    return example_results() + request.session.get("history", []) + request.session.get("batch", [])
+
+
+def _portfolio_metrics(rows):
+    total = len(rows)
+    approved = sum(row["estado"] == "Aprobado" for row in rows)
+    return {
+        "total": total,
+        "approved": approved,
+        "denied": total - approved,
+        "rate": int(approved * 100 / total + 0.5) if total else 0,
+        "average_score": round(sum(row["cibil_score"] for row in rows) / total) if total else 0,
+        "amount": sum(row["loan_amount"] for row in rows),
+        "amount_short": (f"{sum(row['loan_amount'] for row in rows) / 1_000_000:.1f}".replace(".", ",") + " M"),
     }
 
 
 def home_view(request):
-    return render(request, "home.html")
+    rows = _all_results(request)
+    return render(request, "home.html", {"metrics": _portfolio_metrics(rows), "recent": rows[-5:][::-1]})
 
 
 def consulta_individual_view(request):
@@ -184,13 +206,44 @@ def limpiar_filtros(request):
 
 
 def reportes_view(request):
-    rows = request.session.get("history", []) + request.session.get("batch", [])
+    rows = _all_results(request)
     case_id = request.GET.get("dni", "").strip()
     state = request.GET.get("estado", "Todos")
     if case_id:
         rows = [row for row in rows if row["dni"] == case_id]
     if state in ("Aprobado", "Denegado"):
         rows = [row for row in rows if row["estado"] == state]
-    return render(request, "reportes.html", {"resultados": rows, "dni": case_id, "estado": state})
+    return render(request, "reportes.html", {
+        "resultados": rows, "dni": case_id, "estado": state,
+        "metrics": _portfolio_metrics(rows),
+    })
+
+
+def reporte_global_view(request):
+    rows = _all_results(request)
+    metrics = _portfolio_metrics(rows)
+    bands = (
+        ("0–599", 0, 599), ("600–699", 600, 699),
+        ("700–799", 700, 799), ("800–1000", 800, 1000),
+    )
+    score_bands = []
+    for label, low, high in bands:
+        count = sum(low <= row["cibil_score"] <= high for row in rows)
+        score_bands.append({"label": label, "count": count, "width": round(count * 100 / metrics["total"]) if metrics["total"] else 0})
+    amounts = []
+    for state in ("Aprobado", "Denegado"):
+        subset = [row["loan_amount"] for row in rows if row["estado"] == state]
+        amounts.append({"label": state, "average": round(sum(subset) / len(subset)) if subset else 0})
+    maximum = max((item["average"] for item in amounts), default=0)
+    for item in amounts:
+        item["width"] = round(item["average"] * 100 / maximum) if maximum else 0
+    embed_url = os.getenv("POWER_BI_EMBED_URL", "").strip()
+    parsed = urlparse(embed_url)
+    if parsed.scheme != "https" or parsed.hostname != "app.powerbi.com" or parsed.path != "/view" or parsed.username or parsed.password or parsed.port:
+        embed_url = ""
+    return render(request, "reporte_global.html", {
+        "metrics": metrics, "score_bands": score_bands, "amounts": amounts,
+        "embed_url": embed_url,
+    })
 
 

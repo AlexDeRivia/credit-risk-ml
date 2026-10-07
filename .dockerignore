@@ -10,4 +10,6 @@ test
 bi
 reporte.png
 static/img/interbank*
+static/img/*.png
+static/img/*.jpg
 *.log

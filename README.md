@@ -7,6 +7,7 @@ Prototipo académico de portfolio, inspirado en un caso bancario. No está afili
 - Evaluación individual con un Random Forest experimental.
 - Evaluación de hasta 10 casos de un Excel `.xlsx` de máximo 1 MB.
 - Historial y exportación de resultados dentro de una sesión de una hora.
+- Portafolio inicial de 16 casos sintéticos y reporte global web con gráficos. Las evaluaciones del visitante se agregan a su vista durante la sesión.
 
 No hay cuentas ni base de datos de solicitantes. El historial se guarda en una cookie firmada del visitante; esta firma evita cambios no autorizados, pero no cifra su contenido. Por ello la interfaz exige identificadores y alias ficticios.
 
@@ -56,5 +57,7 @@ docker run --rm -p 8000:8000 -e DJANGO_DEBUG=true loans-demo
 El comando anterior es solo para comprobarla en `localhost`. Para exponerla en Internet usa `DJANGO_DEBUG=false` y las variables de producción indicadas arriba.
 
 En Render selecciona un **Web Service** con lenguaje **Docker** y este repositorio como origen. La imagen usa el puerto `PORT` que entrega Render. Define `DJANGO_ALLOWED_HOSTS` con el subdominio `*.onrender.com` exacto asignado al servicio, `DJANGO_CSRF_TRUSTED_ORIGINS` con su URL HTTPS y `DJANGO_TRUST_PROXY=true` después de confirmar que el proxy establece `X-Forwarded-Proto`. Mantén `WEB_CONCURRENCY=1` en una instancia pequeña.
+
+El botón **Ver reporte global** abre el tablero web incluido. Para mostrar además el informe original de Power BI dentro del tablero, publica primero una versión que contenga únicamente datos aptos para ser públicos mediante **Publish to web** de Power BI Service y define `POWER_BI_EMBED_URL` con la URL HTTPS de inserción que empieza por `https://app.powerbi.com/view`. El archivo `.pbix` local no se distribuye con la imagen. El informe de Power BI es una instantánea independiente; las consultas de cada visitante solo se reflejan en los gráficos web.
 
 El modelo `.pkl` es un artefacto local de confianza; no cargues modelos proporcionados por visitantes. El notebook original en `test/` documenta un experimento previo con 98 % de exactitud sobre su partición de prueba, pero esa cifra no ha sido revalidada como desempeño en población real. Antes de difundir el dataset o el reporte Power BI, confirma sus permisos de uso y procedencia.

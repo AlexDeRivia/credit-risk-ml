@@ -1,6 +1,8 @@
 from io import BytesIO
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
+from django.core.management import call_command
 from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 from openpyxl import Workbook
@@ -22,6 +24,27 @@ def sample_case(**overrides):
 
 @override_settings(SECURE_SSL_REDIRECT=False)
 class DemoFlowTests(SimpleTestCase):
+    def test_initial_data_and_global_dashboard(self):
+        home = self.client.get(reverse("home"))
+        self.assertContains(home, "Solicitudes recientes")
+        self.assertContains(home, "Caso Sol")
+        reports = self.client.get(reverse("reportes"))
+        self.assertContains(reports, "Ver reporte global")
+        self.assertContains(reports, "Caso Andino")
+        dashboard = self.client.get(reverse("reporte_global"))
+        self.assertContains(dashboard, "Distribución de resultados")
+        self.assertContains(dashboard, "Distribución por puntaje")
+
+    def test_individual_renders_with_manifest_static_files(self):
+        with TemporaryDirectory() as root:
+            storage = {"staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"}}
+            with override_settings(STATIC_ROOT=root, STORAGES=storage):
+                call_command("collectstatic", interactive=False, verbosity=0)
+                response = self.client.get(reverse("consulta_individual"))
+                self.assertEqual(response.status_code, 200)
+                self.assertRegex(response.content.decode(), r"favicon\.[a-f0-9]+\.svg")
+                self.assertNotContains(response, "css/custom.css")
+
     def test_home_and_model_inference(self):
         self.assertEqual(self.client.get(reverse("home")).status_code, 200)
         response = self.client.post(reverse("consulta_individual"), sample_case())
@@ -37,6 +60,15 @@ class DemoFlowTests(SimpleTestCase):
         self.assertEqual(self.client.session["history"][0]["estado"], expected)
         self.assertEqual(self.client.post(reverse("guardar_consulta_individual")).status_code, 400)
         self.assertContains(self.client.get(reverse("reportes")), "Caso Uno")
+
+    def test_clearing_session_keeps_example_portfolio(self):
+        self.client.post(reverse("consulta_individual"), sample_case())
+        self.client.post(reverse("guardar_consulta_individual"))
+        self.assertContains(self.client.get(reverse("reportes")), "Caso Uno")
+        self.client.post(reverse("limpiar_sesion"))
+        reports = self.client.get(reverse("reportes"))
+        self.assertNotContains(reports, "Caso Uno")
+        self.assertContains(reports, "Caso Andino")
 
     def test_invalid_form_does_not_predict(self):
         with patch("loans.views.predecir") as predict:
