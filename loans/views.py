@@ -1,0 +1,196 @@
+"""Public portfolio demo. Requests never persist applicant data on the server."""
+
+from io import BytesIO
+import re
+from zipfile import ZipFile
+
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
+from openpyxl import Workbook, load_workbook
+
+from .ml_utils import predecir
+
+
+FIELDS = (
+    "dependientes", "ingreso", "prestamo", "plazo", "credito", "residencial",
+    "comerciales", "lujo", "banco",
+)
+LIMITS = {
+    "dependientes": (0, 20), "ingreso": (0, 1_000_000_000),
+    "prestamo": (1_000, 1_000_000_000), "plazo": (1, 20),
+    "credito": (0, 1000), "residencial": (0, 1_000_000_000),
+    "comerciales": (0, 1_000_000_000), "lujo": (0, 1_000_000_000),
+    "banco": (0, 1_000_000_000),
+}
+HEADERS = ("id", "alias", *FIELDS, "educativo", "autonomo")
+
+
+def _parse_case(source):
+    case_id = str(source.get("dni", source.get("id", ""))).strip()
+    alias = str(source.get("nombre", source.get("alias", ""))).strip()
+    if not re.fullmatch(r"[0-9]{8}", case_id):
+        raise ValueError("El ID ficticio debe tener ocho dígitos.")
+    if not re.fullmatch(r"[\wÀ-ÿ ]{3,40}", alias, re.UNICODE):
+        raise ValueError("El alias debe tener entre 3 y 40 caracteres (letras, números o espacios).")
+    parsed = {"dni": case_id, "nombre": alias}
+    for field in FIELDS:
+        raw = str(source.get(field, "")).strip()
+        if not re.fullmatch(r"[0-9]{1,10}", raw):
+            raise ValueError(f"{field}: ingresa un número entero válido.")
+        value = int(raw)
+        minimum, maximum = LIMITS[field]
+        if not minimum <= value <= maximum:
+            raise ValueError(f"{field}: valor fuera de rango ({minimum}–{maximum}).")
+        parsed[field] = value
+    for field, choices in (("educativo", ("tecnico", "secundaria")), ("autonomo", ("si", "no"))):
+        value = str(source.get(field, "")).strip().lower()
+        if value not in choices:
+            raise ValueError(f"{field}: selecciona una opción válida.")
+        parsed[field] = value
+    return parsed
+
+
+def _prediction(case):
+    features = [case[field] for field in FIELDS]
+    features += [int(case["educativo"] == "tecnico"), int(case["autonomo"] == "si")]
+    result, probability = predecir(features)
+    return "Aprobado" if result == 1 else "Denegado", round(probability * 100, 2)
+
+
+def _summary(case, state, probability):
+    return {
+        "dni": case["dni"], "name": case["nombre"], "estado": state,
+        "probabilidad": f"{probability:.2f}%", "loan_amount": case["prestamo"],
+        "cibil_score": case["credito"],
+    }
+
+
+def home_view(request):
+    return render(request, "home.html")
+
+
+def consulta_individual_view(request):
+    context = {"form_data": {}}
+    if request.method == "POST":
+        request.session.pop("pending_case", None)
+        context["form_data"] = request.POST
+        try:
+            case = _parse_case(request.POST)
+            state, probability = _prediction(case)
+            request.session["pending_case"] = _summary(case, state, probability)
+            context.update(estado=state, probabilidad=probability, form_data=case)
+        except (ValueError, TypeError) as exc:
+            context["error"] = str(exc)
+        except Exception:
+            context["error"] = "No se pudo evaluar el caso. Inténtalo de nuevo."
+    return render(request, "consulta_individual.html", context)
+
+
+@require_POST
+def guardar_consulta_individual(request):
+    pending = request.session.pop("pending_case", None)
+    if not pending:
+        return JsonResponse({"success": False, "message": "Evalúa un caso antes de guardarlo."}, status=400)
+    history = request.session.get("history", [])[-9:]
+    history.append(pending)
+    request.session["history"] = history
+    return JsonResponse({"success": True, "message": "Caso ficticio añadido al historial de esta sesión."})
+
+
+@require_POST
+def comprobar_cliente(request):
+    case_id = request.POST.get("dni", "").strip()
+    if not re.fullmatch(r"[0-9]{8}", case_id):
+        return JsonResponse({"success": False, "message": "El ID debe tener ocho dígitos."}, status=400)
+    found = any(row["dni"] == case_id for row in request.session.get("history", []))
+    message = "El ID ya figura en esta sesión." if found else "ID disponible en esta sesión."
+    return JsonResponse({"success": True, "message": message})
+
+
+def consulta_lotes_view(request):
+    if request.method == "GET":
+        return render(request, "consulta_lotes.html", {"resultados": request.session.get("batch", [])})
+    file = request.FILES.get("archivo")
+    if not file or not file.name.lower().endswith(".xlsx") or file.size > 1_000_000:
+        return JsonResponse({"success": False, "errors": ["Sube un archivo .xlsx de hasta 1 MB."]}, status=400)
+    try:
+        with ZipFile(file) as archive:
+            parts = archive.infolist()
+            if len(parts) > 100 or sum(part.file_size for part in parts) > 5_000_000:
+                raise ValueError("El archivo Excel excede el límite de contenido.")
+        file.seek(0)
+        book = load_workbook(file, read_only=True, data_only=True, keep_links=False)
+        sheet = book.active
+        rows = sheet.iter_rows(values_only=True)
+        headers = next(rows, None)
+        if not headers or tuple(str(h).strip().lower() for h in headers) != HEADERS:
+            raise ValueError("Las columnas no coinciden con la plantilla documentada.")
+        cases = []
+        for row in rows:
+            if all(value is None for value in row):
+                continue
+            if len(cases) == 10:
+                raise ValueError("El lote admite como máximo diez casos.")
+            cases.append(_parse_case(dict(zip(HEADERS, row))))
+        book.close()
+        if not cases:
+            raise ValueError("El archivo no contiene casos.")
+        results = [_summary(case, *_prediction(case)) for case in cases]
+    except (ValueError, TypeError, KeyError) as exc:
+        return JsonResponse({"success": False, "errors": [str(exc)]}, status=400)
+    except Exception:
+        return JsonResponse({"success": False, "errors": ["No se pudo leer el archivo Excel."]}, status=400)
+    request.session["batch"] = results
+    return JsonResponse({"success": True, "resultados": results})
+
+
+def _excel_response(rows, filename):
+    book = Workbook()
+    sheet = book.active
+    sheet.append(["ID ficticio", "Alias", "Estado", "Probabilidad de aprobación", "Préstamo", "Puntaje"])
+    for row in rows:
+        sheet.append([row["dni"], row["name"], row["estado"], row["probabilidad"], row["loan_amount"], row["cibil_score"]])
+    stream = BytesIO()
+    book.save(stream)
+    response = HttpResponse(stream.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
+
+
+def descargar_resultados(request):
+    return _excel_response(request.session.get("batch", []), "resultados_demo.xlsx")
+
+
+def generar_reporte_lote(request):
+    return descargar_resultados(request)
+
+
+def generar_reporte(request):
+    pending = request.session.get("pending_case")
+    if not pending:
+        return redirect("consulta_individual")
+    return _excel_response([pending], "resultado_demo.xlsx")
+
+
+@require_POST
+def limpiar_sesion(request):
+    request.session.flush()
+    return redirect("home")
+
+
+def limpiar_filtros(request):
+    return redirect("reportes")
+
+
+def reportes_view(request):
+    rows = request.session.get("history", []) + request.session.get("batch", [])
+    case_id = request.GET.get("dni", "").strip()
+    state = request.GET.get("estado", "Todos")
+    if case_id:
+        rows = [row for row in rows if row["dni"] == case_id]
+    if state in ("Aprobado", "Denegado"):
+        rows = [row for row in rows if row["estado"] == state]
+    return render(request, "reportes.html", {"resultados": rows, "dni": case_id, "estado": state})
+
+

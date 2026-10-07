@@ -1,0 +1,14 @@
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.env
+db.sqlite3
+staticfiles/
+dataset/
+bi/
+static/img/interbank*.png
+reporte.png
+test/test_consulta_lotes_*.xlsx
+*.log
+reporte_lote.xlsx

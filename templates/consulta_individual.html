@@ -1,0 +1,418 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Consulta Individual</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link rel="icon" href="{% static 'img/icon_window.png' %}" type="image/x-icon">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .form-container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .result-container {
+            background: #333;
+            color: white;
+            border-radius: 10px;
+            padding: 20px 40px 40px 40px;
+            text-align: center;
+            margin: 50px;
+        }
+        .form-label{
+            font-size: 12PX;
+        }
+        h2, h4 {
+            color: #333;
+        }
+        .btn-primary {
+            background-color: #f5c518;
+            border-color: #f5c518;
+        }
+        .btn-primary:hover {
+            background-color: #e0af17;
+            border-color: #e0af17;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            filter: invert(100%); /* Invierte los colores de la imagen */
+            /*filter: brightness(0) invert(1);  Cambia a blanco */
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="alert alert-info">Demo académica independiente. Usa únicamente IDs y alias ficticios; los resultados permanecen en tu sesión durante una hora.</div>
+        {% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endif %}
+
+        <a href="{% url 'home' %}">
+            <img src="{% static 'img/exitICON.png' %}" alt="Cerrar sesión" class="logout-btn" style="width: 40px; height: 40px; margin-right: 30px;">
+        </a>
+        
+        <div class="d-flex mt-4">
+            <strong style="margin-right:15px">RIESGO CREDITICIO · DEMO</strong>
+            <h1 style="font-weight: bold; color: #EED727;  margin-top: 4px;">CONSULTA INDIVIDUAL</h1>
+        </div>
+
+
+        <div class="row">
+            <!-- Formulario -->
+            <div class="col-md-8">
+                <div class="form-container p-4"
+                style="background: rgba(255, 255, 255, 0); 
+                border: none; box-shadow: none; 
+                padding-bottom: 0px; margin-right: 50px;">
+
+                <form method="POST" action="{% url 'consulta_individual' %}" id="consulta-form">
+                    {% csrf_token %}
+
+                    <h3 style="font-weight: bold; margin-bottom: 12px;">CLIENTE:</h3>
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="dni" class="form-label">ID ficticio de 8 dígitos:</label>
+                            <input type="text" id="dni" name="dni" class="form-control" 
+                                maxlength="8" minlength="8" 
+                                pattern="\d{8}" 
+                                title="El DNI debe tener 8 dígitos."
+                                value="{{ form_data.dni|default:'' }}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="nombre" class="form-label">Alias ficticio:</label>
+                            <input type="text" id="nombre" name="nombre" class="form-control"
+                                value="{{ form_data.nombre|default:'' }}" required>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end" style="width: 26%;">
+                            <button type="submit" name="btn-comprobar" class="btn btn-primary w-100" id="btn-comprobar"
+                                    style="font-weight: bold; width: 20%; padding: 8px 16px; 
+                                    font-size: 14px; border-radius: 18px;">COMPROBAR</button>
+                        </div>
+                    </div>
+
+                    <h3 style="font-weight: bold; margin-bottom: 12px;">FORMULARIO:</h3>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="dependientes" class="form-label">Número de dependientes:</label>
+                            <select id="dependientes" name="dependientes" class="form-select" required>
+                                <option value="">Selecciona</option>
+                                <option value="1" {% if form_data.dependientes == 1 %}selected{% endif %}>1</option>
+                                <option value="2" {% if form_data.dependientes == 2 %}selected{% endif %}>2</option>
+                                <option value="3" {% if form_data.dependientes == 3 %}selected{% endif %}>3</option>
+                                <option value="4" {% if form_data.dependientes == 4 %}selected{% endif %}>4</option>
+                                <option value="5" {% if form_data.dependientes == 5 %}selected{% endif %}>5</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="ingreso" class="form-label">Ingreso anual (unidades referenciales):</label>
+                            <input type="number" id="ingreso" name="ingreso" class="form-control" 
+                                min="0" 
+                                title="Debe ingresar un número mayor o igual a 0."
+                                value="{{ form_data.ingreso|default:'' }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="prestamo" class="form-label">Préstamo solicitado (unidades referenciales):</label>
+                            <input type="number" id="prestamo" name="prestamo" class="form-control" 
+                                min="1000" 
+                                title="Debe ingresar un número mayor a 1000."
+                                value="{{ form_data.prestamo|default:'' }}" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="plazo" class="form-label">Plazo del préstamo (años):</label>
+                            <select id="plazo" name="plazo" class="form-select" required>
+                                <option value="">Selecciona</option>
+                                <option value="2" {% if form_data.plazo == 2 %}selected{% endif %}>2</option>
+                                <option value="5" {% if form_data.plazo == 5 %}selected{% endif %}>5</option>
+                                <option value="8" {% if form_data.plazo == 8 %}selected{% endif %}>8</option>
+                                <option value="10" {% if form_data.plazo == 10 %}selected{% endif %}>10</option>
+                                <option value="12" {% if form_data.plazo == 12 %}selected{% endif %}>12</option>
+                                <option value="15" {% if form_data.plazo == 15 %}selected{% endif %}>15</option>
+                                <option value="20" {% if form_data.plazo == 20 %}selected{% endif %}>20</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="credito" class="form-label">Puntaje de Crédito (0 - 1000):</label>
+                            <input type="number" id="credito" name="credito" class="form-control" 
+                                min="0" max="1000" 
+                                title="El puntaje de crédito debe estar entre 0 y 1000."
+                                value="{{ form_data.credito|default:'' }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="residencial" class="form-label">Activos residenciales (unidades referenciales):</label>
+                            <input type="number" id="residencial" name="residencial" class="form-control" 
+                                min="0" 
+                                title="Debe ingresar un número mayor o igual a 0."
+                                value="{{ form_data.residencial|default:'' }}" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="comerciales" class="form-label">Activos comerciales (unidades referenciales):</label>
+                            <input type="number" id="comerciales" name="comerciales" class="form-control" 
+                                min="0" 
+                                title="Debe ingresar un número mayor o igual a 0."
+                                value="{{ form_data.comerciales|default:'' }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="lujo" class="form-label">Activos de lujo (unidades referenciales):</label>
+                            <input type="number" id="lujo" name="lujo" class="form-control" 
+                                min="0" 
+                                title="Debe ingresar un número mayor o igual a 0."
+                                value="{{ form_data.lujo|default:'' }}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="banco" class="form-label">Activos bancarios (unidades referenciales):</label>
+                            <input type="number" id="banco" name="banco" class="form-control" 
+                                min="0" 
+                                title="Debe ingresar un número mayor o igual a 0."
+                                value="{{ form_data.banco|default:'' }}" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="educativo" class="form-label">Nivel Educativo:</label>
+                            <select id="educativo" name="educativo" class="form-select" required>
+                                <option value="">Selecciona</option>
+                                <option value="secundaria" {% if form_data.educativo == 'secundaria' %}selected{% endif %}>Graduado</option>
+                                <option value="tecnico" {% if form_data.educativo == 'tecnico' %}selected{% endif %}>No Graduado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="autonomo" class="form-label">¿Es Autónomo?</label>
+                            <select id="autonomo" name="autonomo" class="form-select" required>
+                                <option value="">Selecciona</option>
+                                <option value="si" {% if form_data.autonomo == 'si' %}selected{% endif %}>Sí</option>
+                                <option value="no" {% if form_data.autonomo == 'no' %}selected{% endif %}>No</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3" style="padding-top: 30px;">
+                            <button type="submit" class="btn btn-primary"
+                                    style="font-weight: bold; width: 43%; padding: 8px 16px; 
+                                    font-size: 14px; border-radius: 18px;">EVALUAR</button>
+
+                            <button type="button" class="btn btn-secondary" id="reset-btn"
+                                    style="font-weight: bold; width: 40%; padding: 8px 16px; 
+                                    font-size: 14px; border-radius: 18px;">LIMPIAR</button>
+                        </div>
+                    </div>
+                </form>
+                </div>
+            </div>
+
+            <!-- Resultado -->
+            <div class="col-md-4">
+                <div class="result-container">
+                    <h4 style="padding: 20px 0px 12px 0px; color: white;">RESULTADO</h4>
+                    {% if estado %}
+                        <img src="{% static 'img/aprobado.png' %}" alt="Aprobado" 
+                            style="width: 140px; margin-bottom: 20px;" 
+                            id="aprobado-img" class="{% if estado != 'Aprobado' %}d-none{% endif %}">
+                        <img src="{% static 'img/denegado.png' %}" alt="Denegado" 
+                            style="width: 140px; margin-bottom: 20px;" 
+                            id="denegado-img" class="{% if estado != 'Denegado' %}d-none{% endif %}">
+                        <p id="estado-text"><strong>ESTADO:</strong> {{ estado }}</p>
+                        <p id="probabilidad-text"><strong>PROBABILIDAD DE APROBACIÓN:</strong> {{ probabilidad|floatformat:2 }}%</p>
+                        <p style="font-size: 12px;">Evalúa solicitudes de préstamo de clientes de forma individual para un análisis detallado.</p>
+                        
+                        <a href="#" class="btn btn-primary" id="guardar-btn"
+                            style="font-weight: bold; width: 45%; padding: 8px 16px; font-size: 14px; border-radius: 18px;"
+                            onclick="guardarConsulta()">GUARDAR</a>
+
+                    {% else %}
+                        <p style="font-size: 12px;">Evalúa solicitudes de préstamo de clientes de forma individual para un análisis detallado.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+    
+    {% if messages %}
+    <script>
+        Swal.fire({
+            title: 'Mensaje',
+            text: '{{ messages|join:" " }}',
+            icon: 'info',
+            confirmButtonText: 'Aceptar'
+        });
+    </script>
+    {% endif %}
+
+    
+    <script>
+        // Validar que el DNI solo contenga números
+        document.getElementById('dni').addEventListener('input', function (e) {
+            this.value = this.value.replace(/\D/g, ''); // Reemplaza todo lo que no sea dígito
+        });
+    
+        // Validar campos numéricos en general
+        const numericFields = document.querySelectorAll('input[type="number"]');
+        numericFields.forEach(field => {
+            field.addEventListener('input', function (e) {
+                if (this.value < 0) {
+                    this.value = ''; // No permite números negativos
+                }
+            });
+        });
+    </script>
+    
+    <script>
+        // Referencias al formulario y los elementos relacionados con los resultados
+        const resetButton = document.getElementById('reset-btn'); // Botón "Limpiar"
+        const consultaForm = document.getElementById('consulta-form'); // Formulario
+        const estadoText = document.getElementById('estado-text');
+        const probabilidadText = document.getElementById('probabilidad-text');
+        const aprobadoImg = document.getElementById('aprobado-img');
+        const denegadoImg = document.getElementById('denegado-img');
+        const guardarButton = document.getElementById('guardar-btn'); // Botón "Guardar"
+    
+        // Función para reiniciar resultados visuales
+        const resetResultados = () => {
+            if (aprobadoImg) aprobadoImg.classList.add('d-none'); // Oculta imagen "Aprobado"
+            if (denegadoImg) denegadoImg.classList.add('d-none'); // Oculta imagen "Denegado"
+            if (estadoText) estadoText.style.display = 'none'; // Oculta texto de estado
+            if (probabilidadText) probabilidadText.style.display = 'none'; // Oculta texto de probabilidad
+            if (guardarButton) guardarButton.classList.add('d-none'); // Oculta el botón "Guardar"
+        };
+    
+        // Evento del botón "Limpiar"
+        resetButton.addEventListener('click', (e) => {
+            e.preventDefault(); // Evita el comportamiento predeterminado
+    
+            // Reinicia los valores del formulario
+            consultaForm.reset();
+    
+            // Limpia manualmente los valores de los campos visibles (si reset no aplica correctamente a algún campo)
+            const inputs = consultaForm.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.value = '';
+                if (input.tagName === 'SELECT') {
+                    input.selectedIndex = 0; // Reinicia los selects
+                }
+            });
+    
+            // Reinicia los resultados visuales
+            resetResultados();
+        });
+    </script>
+    
+    <script>
+        function guardarConsulta() {
+            fetch("{% url 'guardar_consulta_individual' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: '{}'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('guardar-btn').classList.add('d-none');
+                    Swal.fire({
+                        title: 'Éxito',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonText: 'Aceptar'
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message,
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Error inesperado',
+                    text: 'Hubo un problema al guardar la consulta.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
+            });
+        }
+    </script>
+    
+    <script>
+        document.getElementById('btn-comprobar').addEventListener('click', function (e) {
+            e.preventDefault();
+    
+            const dni = document.getElementById('dni').value.trim();
+    
+            if (!dni || dni.length !== 8 || !/^\d+$/.test(dni)) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'El DNI debe contener exactamente 8 dígitos numéricos.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+    
+            const formData = new FormData();
+            formData.append('dni', dni);
+    
+            fetch("{% url 'comprobar_cliente' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Resultado',
+                        text: data.message,
+                        icon: 'info',
+                        confirmButtonText: 'Aceptar'
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.message,
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Error inesperado',
+                    text: 'Hubo un problema al comprobar el cliente.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
+            });
+        });
+    </script>
+    
+    
+    
+</body>
+</html>

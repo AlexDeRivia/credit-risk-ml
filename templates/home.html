@@ -1,0 +1,140 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="icon" href="{% static 'img/icon_window.png' %}" type="image/x-icon">
+    <style>
+        body {
+            background-color: #EAE9E7;
+        }
+        .option-card {
+            background-color: #393836;
+            color: white;
+            border-radius: 22px;
+            text-align: center;
+            padding: 20px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        .option-card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+        .option-card h5 {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .btn-ingresar {
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px; 
+            width: 60%; /* Reducir el ancho del botón */
+            margin: 0 auto; /* Centrar el botón */
+            display: block;
+        }
+        .btn-ingresar-yellow {
+            color: white;
+            background-color: #EED727;
+            border-color: #EED727;
+        }
+        .btn-ingresar-yellow:hover {
+            background-color: #e0a800;
+            border-color: #e0a800;
+            color: white;
+        }
+        .btn-ingresar-blue {
+            color: white;
+            background-color: #2A9BFF;
+            border-color: #2A9BFF;
+        }
+        .btn-ingresar-blue:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            color: white;
+        }
+        .btn-ingresar-green {
+            color: white;
+            background-color: #46BE52;
+            border-color: #46BE52;
+        }
+        .btn-ingresar-green:hover {
+            background-color: #218838;
+            border-color: #218838;
+            color: white;
+        }
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            filter: invert(100%); /* Invierte los colores de la imagen */
+            /*filter: brightness(0) invert(1);  Cambia a blanco */
+        }
+
+        .texto {
+            font-size: 0.775rem; /* Tamaño de texto reducido (14px aproximadamente) */
+            line-height: 1.4; /* Espaciado entre líneas ajustado */
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .option-card:hover {
+            transform: scale(1.1); /* Agranda ligeramente */
+            box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3); /* Aumenta la sombra */
+            background-color: white;
+            color: #393836;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- Botón de cerrar sesión como imagen -->
+        <form action="{% url 'limpiar_sesion' %}" method="post" style="text-align:right">{% csrf_token %}<button class="btn btn-outline-secondary" type="submit">Borrar mi sesión</button></form>
+
+        <!-- Encabezado -->
+        <div class="text-center">
+            <p style="font-weight:bold; font-size:1.2rem; margin-top:30px;">RIESGO CREDITICIO · DEMO</p>
+            <h2 style="font-weight: bold; margin-bottom: 12px;">DEMO DE EVALUACIÓN</h2>
+            <p>Prototipo académico independiente, inspirado en un caso bancario. Usa solo datos ficticios. El resultado del modelo no constituye una decisión crediticia real.</p>
+        </div>
+
+        <!-- Opciones -->
+        <div class="row mt-4 justify-content-center" style="padding: 25px;">
+            <!-- Consulta Individual -->
+            <div class="col-md-3 mx-2">
+                <div class="option-card" style="padding-bottom: 60px; padding-top: 45px;">
+                    <img src="{% static 'img/individualIMG.jpg' %}" alt="Consulta Individual">
+                    <h5>CONSULTA INDIVIDUAL</h5>
+                    <p class="texto">Evalúa solicitudes de préstamo de clientes de forma individual para un análisis detallado.</p>
+                    <a href="{% url 'consulta_individual' %}" class="btn btn-ingresar btn-ingresar-yellow">INGRESAR</a>
+                </div>
+            </div>
+            <!-- Consulta por Lotes -->
+            <div class="col-md-3 mx-2">
+                <div class="option-card" style="padding-bottom: 60px; padding-top: 45px;">
+                    <img src="{% static 'img/lotesIMG.jpg' %}" alt="Consulta por Lotes">
+                    <h5>CONSULTA POR LOTES</h5>
+                    <p class="texto">Revisa múltiples solicitudes a la vez, optimizando el tiempo de evaluaciones.</p>
+                    <a href="{% url 'consulta_lotes' %}" class="btn btn-ingresar btn-ingresar-blue">INGRESAR</a>
+                </div>
+            </div>
+            <!-- Reportes y Consultas -->
+            <div class="col-md-3 mx-2">
+                <div class="option-card" style="padding-bottom: 60px; padding-top: 45px;">
+                    <img src="{% static 'img/reportesIMG.jpg' %}" alt="Reportes y Consultas">
+                    <h5>REPORTES Y CONSULTA</h5>
+                    <p class="texto">Accede a reportes y análisis completos para tomar decisiones bien informadas.</p>
+                    <a href="{% url 'reportes' %}" class="btn btn-ingresar btn-ingresar-green">INGRESAR</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

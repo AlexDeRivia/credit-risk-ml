@@ -1,0 +1,13 @@
+venv
+.venv
+.git
+.env
+__pycache__
+*.pyc
+staticfiles
+dataset
+test
+bi
+reporte.png
+static/img/interbank*
+*.log

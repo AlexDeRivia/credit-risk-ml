@@ -1,0 +1,210 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Consulta Lotes</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="icon" href="{% static 'img/icon_window.png' %}" type="image/x-icon">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .form-container {
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            filter: invert(100%); /* Invierte los colores de la imagen */
+            /*filter: brightness(0) invert(1);  Cambia a blanco */
+        }
+
+        .result-container {
+            background: #393836;
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 0px 60px 0px 60px;
+        }
+        h2, h4 {
+            color: white;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            color: #333;
+            text-decoration: none;
+        }
+        .close-btn:hover {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="alert alert-info">Demo académica: usa solo casos ficticios. Descarga la <a href="{% static 'plantilla_lote.xlsx' %}">plantilla Excel</a> (máximo 10 casos y 1 MB).</div>
+
+        <a href="{% url 'home' %}">
+            <img src="{% static 'img/exitICON.png' %}" alt="Cerrar sesión" class="logout-btn" style="width: 40px; height: 40px; margin-right: 30px;">
+        </a>
+        
+        <div class="d-flex mt-4">
+            <strong style="margin-right:15px">RIESGO CREDITICIO · DEMO</strong>
+            <h1 style="font-weight: bold; color: #2A9BFF;  margin-top: 4px;">CONSULTA POR LOTES</h1>
+        </div>
+
+
+        <div class="row" >
+            <!-- Cargar Formato -->
+            <div class="col-md-8">
+                <div class="form-container p-4" 
+                style="background: rgba(255, 255, 255, 0); 
+                border: none; box-shadow: none; 
+                padding-bottom: 0px; margin-right: 100px;">
+                    <h3 style="font-weight: bold; margin-bottom: 25px;">CARGAR FORMATO:</h3>
+                    <form method="POST" action="{% url 'consulta_lotes' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row align-items-center">
+                            <!-- Input para cargar archivo -->
+                            <div class="col-md-9">
+                                <input type="file" id="archivo" name="archivo" class="form-control">
+                            </div>
+                            <!-- Botón para evaluar -->
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary w-100" 
+                                style="font-weight: bold; width: auto; padding: 8px 16px; 
+                                font-size: 14px; border-radius: 18px;">EVALUAR</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+            <!-- Resultado -->
+            <div class="col-md-4">
+                <div class="result-container">
+                    <h4 style="padding: 20px 0px 12px 0px;">RESULTADO</h4>
+                    <p id="result-paragraph" style="padding-bottom: 20px; font-size: 14px;">Revisa múltiples solicitudes a la vez, optimizando el tiempo en evaluaciones grupales.</p>
+                    
+                    <div class="d-flex justify-content-center" style="padding-bottom: 20px;">
+                        <div class="d-grid gap-2" style="width: 50%;">
+                            <a href="{% url 'descargar_resultados' %}" 
+                                class="btn btn-primary" 
+                                id="download-btn"
+                                style="margin-bottom: 12px; font-weight: bold; width: 100%; padding: 8px 16px; 
+                                    font-size: 14px; border-radius: 18px;"
+                                data-resultados="{{ resultados|length|default:0 }}">
+                                DESCARGAR
+                            </a>
+                    
+                            <form action="{% url 'limpiar_sesion' %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary" id="reset-btn"
+                                    style="font-weight: bold; width: 100%; padding: 8px 16px; font-size: 14px; border-radius: 18px;">BORRAR SESIÓN</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+    <script>
+        // Función para mostrar errores con SweetAlert
+        const showErrorAlert = (errors) => {
+            Swal.fire({
+                title: 'Error',
+                html: errors.join('<br>'),
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+            });
+        };
+
+        // Función para mostrar mensaje de carga con SweetAlert
+        const showLoadingAlert = () => {
+            Swal.fire({
+                title: 'Cargando',
+                text: 'Procesando los registros...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        };
+
+        // Listener para el botón de limpiar
+        document.querySelector('form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            // Mostrar mensaje de carga
+            showLoadingAlert();
+
+            fetch("{% url 'consulta_lotes' %}", {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.close(); // Cerrar mensaje de carga
+                if (data.success) {
+                    document.getElementById('result-paragraph').innerText = `Registros procesados: ${data.resultados.length}`;
+                    document.getElementById('download-btn').setAttribute('data-resultados', data.resultados.length);
+                } else {
+                    showErrorAlert(data.errors); // Mostrar errores con SweetAlert
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                showErrorAlert(['Ocurrió un error inesperado. Por favor, inténtalo de nuevo.']);
+            });
+
+        });
+
+        document.getElementById('download-btn').addEventListener('click', (e) => {
+            const resultados = parseInt(e.target.getAttribute('data-resultados'), 10) || 0; // Obtiene el número de resultados
+
+            if (resultados === 0) {
+                e.preventDefault(); // Evita la navegación si no hay resultados
+                Swal.fire({
+                    title: 'Sin resultados',
+                    text: 'No hay ninguna evaluación disponible para descargar.',
+                    icon: 'info',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+        });
+
+
+    </script>
+    
+</body>
+</html>
