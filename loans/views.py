@@ -27,6 +27,7 @@ LIMITS = {
     "banco": (0, 1_000_000_000),
 }
 HEADERS = ("id", "alias", *FIELDS, "educativo", "autonomo")
+SCENARIO_FIELDS = {"prestamo", "plazo", "credito"}
 
 
 def _parse_case(source):
@@ -107,6 +108,27 @@ def consulta_individual_view(request):
         except Exception:
             context["error"] = "No se pudo evaluar el caso. Inténtalo de nuevo."
     return render(request, "consulta_individual.html", context)
+
+
+@require_POST
+def simular_escenario(request):
+    """Compare two actual inferences without changing the saved case."""
+    try:
+        base = _parse_case(request.POST)
+        field = request.POST.get("variable", "")
+        if field not in SCENARIO_FIELDS:
+            raise ValueError("Selecciona una variable disponible para comparar.")
+        candidate = {**base, field: request.POST.get("valor", "")}
+        candidate = _parse_case(candidate)
+        base_state, base_probability = _prediction(base)
+        simulated_state, simulated_probability = _prediction(candidate)
+    except (ValueError, TypeError) as exc:
+        return JsonResponse({"error": str(exc)}, status=400)
+    return JsonResponse({
+        "actual": {"estado": base_state, "probabilidad": base_probability},
+        "escenario": {"estado": simulated_state, "probabilidad": simulated_probability},
+        "diferencia": round(simulated_probability - base_probability, 2),
+    })
 
 
 @require_POST

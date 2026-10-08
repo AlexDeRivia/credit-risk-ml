@@ -4,41 +4,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#142d38">
+  <meta name="theme-color" content="#f7f7f3">
   <title>{% block title %}Nexo · Riesgo crediticio{% endblock %}</title>
   <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   <script src="{% static 'js/app.js' %}" defer></script>
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar" id="sidebar">
-      <a class="brand" href="{% url 'home' %}" aria-label="Nexo, inicio">
-        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
-        <span><strong>Nexo</strong><small>Riesgo crediticio</small></span>
-      </a>
-      <div class="sidebar-label">ESPACIO DE TRABAJO</div>
-      <nav class="main-nav" aria-label="Navegación principal">
-        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}"><span class="nav-icon">◫</span> Resumen</a>
-        <a class="nav-link {% if request.resolver_match.url_name == 'consulta_individual' %}active{% endif %}" href="{% url 'consulta_individual' %}"><span class="nav-icon">◇</span> Consulta individual</a>
-        <a class="nav-link {% if request.resolver_match.url_name == 'consulta_lotes' %}active{% endif %}" href="{% url 'consulta_lotes' %}"><span class="nav-icon">▦</span> Consulta por lotes</a>
-        <a class="nav-link {% if request.resolver_match.url_name == 'reportes' %}active{% endif %}" href="{% url 'reportes' %}"><span class="nav-icon">☷</span> Reportes y consulta</a>
-        <a class="nav-link {% if request.resolver_match.url_name == 'reporte_global' %}active{% endif %}" href="{% url 'reporte_global' %}"><span class="nav-icon">◴</span> Reporte global</a>
+  <div class="site-shell">
+    <header class="site-header">
+      <a class="site-brand" href="{% url 'home' %}" aria-label="Nexo, inicio"><span class="brand-symbol" aria-hidden="true">N<span>.</span></span><span class="brand-name">Nexo <small>Riesgo crediticio</small></span></a>
+      <button class="menu-button" id="menu-toggle" type="button" aria-label="Abrir menú" aria-controls="main-nav" aria-expanded="false">Menú <span aria-hidden="true">☰</span></button>
+      <nav class="main-nav" id="main-nav" aria-label="Navegación principal">
+        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>Inicio</a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'consulta_individual' %}active{% endif %}" href="{% url 'consulta_individual' %}" {% if request.resolver_match.url_name == 'consulta_individual' %}aria-current="page"{% endif %}>Evaluar</a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'consulta_lotes' %}active{% endif %}" href="{% url 'consulta_lotes' %}" {% if request.resolver_match.url_name == 'consulta_lotes' %}aria-current="page"{% endif %}>Lotes</a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'reportes' %}active{% endif %}" href="{% url 'reportes' %}" {% if request.resolver_match.url_name == 'reportes' %}aria-current="page"{% endif %}>Casos</a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'reporte_global' %}active{% endif %}" href="{% url 'reporte_global' %}" {% if request.resolver_match.url_name == 'reporte_global' %}aria-current="page"{% endif %}>Panorama</a>
       </nav>
-      <div class="sidebar-bottom">
-        <div class="sidebar-note"><span class="pulse"></span> Modelo disponible <small>Evaluación en tiempo real</small></div>
-        <form action="{% url 'limpiar_sesion' %}" method="post">{% csrf_token %}<button class="clear-session" type="submit">Limpiar mi sesión <span aria-hidden="true">↗</span></button></form>
-      </div>
-    </aside>
-    <div class="main-column">
-      <header class="topbar">
-        <button class="menu-button" id="menu-toggle" type="button" aria-label="Abrir menú" aria-controls="sidebar" aria-expanded="false">☰</button>
-        <span class="topbar-context">PLATAFORMA DE ANÁLISIS <span class="topbar-divider">/</span> {% block section %}RESUMEN{% endblock %}</span>
-        <span class="topbar-status"><span class="pulse"></span> Sistema operativo</span>
-      </header>
-      <main class="content">{% block content %}{% endblock %}</main>
-      <footer class="footer">Nexo <span>·</span> Análisis de riesgo crediticio</footer>
-    </div>
+      <div class="header-meta"><span class="model-dot" aria-hidden="true"></span> Modelo disponible</div>
+    </header>
+    <main class="content" id="main-content">{% block content %}{% endblock %}</main>
+    <footer class="site-footer"><span>Nexo © {% now "Y" %}</span><span>Lecturas de riesgo en contexto.</span><form action="{% url 'limpiar_sesion' %}" method="post">{% csrf_token %}<button class="footer-action" type="submit">Limpiar mi sesión ↗</button></form></footer>
   </div>
 </body>
 </html>

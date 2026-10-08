@@ -1,20 +1,34 @@
 {% extends 'base.html' %}
 {% load humanize %}
-{% block title %}Resumen · Nexo{% endblock %}
-{% block section %}RESUMEN{% endblock %}
+{% block title %}Inicio · Nexo{% endblock %}
 {% block content %}
-<div class="page-intro"><div><span class="eyebrow">PANEL PRINCIPAL</span><h1>Todo el panorama,<br><em>en un solo lugar.</em></h1><p>Explora solicitudes, evalúa nuevos casos y consulta los indicadores del portafolio.</p></div><div class="intro-art" aria-hidden="true"><div class="art-orbit"></div><div class="art-card art-card-one"><span>↗</span><b>{{ metrics.rate }}%</b><small>Tasa de aprobación</small></div><div class="art-card art-card-two"><span class="mini-bars"><i></i><i></i><i></i><i></i></span></div></div></div>
-<section class="metrics-grid" aria-label="Indicadores principales">
-  <article class="metric-card"><div class="metric-top"><span>Solicitudes evaluadas</span><span class="metric-icon">▦</span></div><strong>{{ metrics.total }}</strong><small>Casos disponibles</small></article>
-  <article class="metric-card"><div class="metric-top"><span>Tasa de aprobación</span><span class="metric-icon mint">↗</span></div><strong>{{ metrics.rate }}<sup>%</sup></strong><small>{{ metrics.approved }} solicitudes aprobadas</small></article>
-  <article class="metric-card"><div class="metric-top"><span>Puntaje promedio</span><span class="metric-icon amber">◎</span></div><strong>{{ metrics.average_score }}</strong><small>Escala de 0 a 1000</small></article>
-  <article class="metric-card"><div class="metric-top"><span>Monto solicitado</span><span class="metric-icon blue">◇</span></div><strong class="metric-amount">{{ metrics.amount_short }}</strong><small>Millones de unidades referenciales</small></article>
+<section class="home-hero" aria-labelledby="hero-title">
+  <div class="hero-copy">
+    <span class="section-tag"><span>01 /</span> ANALIZAR CON CONTEXTO</span>
+    <h1 id="hero-title">El riesgo,<br><em>a la vista.</em></h1>
+    <p>Once variables entran al modelo. Una lectura clara sale de él. Evalúa un perfil y observa cómo cambia la estimación al modificar un escenario.</p>
+    <div class="hero-actions"><a class="button primary" href="{% url 'consulta_individual' %}">Evaluar un caso <span aria-hidden="true">↗</span></a><a class="text-link" href="#como-funciona">Ver el recorrido <span aria-hidden="true">↓</span></a></div>
+  </div>
+  <div class="hero-aside" aria-label="Ficha del modelo">
+    <div class="hero-aside-top"><span>NEXO / MODELO ACTIVO</span><span class="model-dot" aria-hidden="true"></span></div>
+    <div class="hero-aside-body"><span class="hero-big-number">11<span>.</span></span><p>variables para leer un perfil financiero y estimar su resultado.</p></div>
+    <div class="hero-aside-bottom"><span>Random Forest · inferencia · comparación</span><span aria-hidden="true">↗</span></div>
+  </div>
 </section>
-<div class="section-heading"><div><span class="eyebrow">COMIENZA AQUÍ</span><h2>¿Qué deseas hacer?</h2></div></div>
-<section class="action-grid" aria-label="Acciones principales">
-  <a class="action-card" href="{% url 'consulta_individual' %}"><span class="action-symbol mint-bg">◇</span><span class="action-text"><strong>Consulta individual</strong><small>Evalúa un caso y revisa la probabilidad estimada.</small></span><span class="action-arrow">↗</span></a>
-  <a class="action-card" href="{% url 'consulta_lotes' %}"><span class="action-symbol blue-bg">▦</span><span class="action-text"><strong>Consulta por lotes</strong><small>Procesa hasta diez solicitudes desde un Excel.</small></span><span class="action-arrow">↗</span></a>
-  <a class="action-card" href="{% url 'reportes' %}"><span class="action-symbol amber-bg">☷</span><span class="action-text"><strong>Reportes y consulta</strong><small>Busca resultados y abre el tablero global.</small></span><span class="action-arrow">↗</span></a>
+
+<section class="journey" id="como-funciona" aria-labelledby="journey-title">
+  <div class="section-heading editorial-heading"><span class="section-tag"><span>02 /</span> EL RECORRIDO</span><h2 id="journey-title">No solo un resultado.<br><em>Una lectura que puedes explorar.</em></h2></div>
+  <div class="journey-list">
+    <a href="{% url 'consulta_individual' %}"><span class="journey-index">01</span><span><strong>Evalúa un perfil</strong><small>Completa un caso o carga un ejemplo para probar el modelo.</small></span><span class="journey-arrow" aria-hidden="true">↗</span></a>
+    <a href="{% url 'consulta_individual' %}"><span class="journey-index">02</span><span><strong>Compara escenarios</strong><small>Cambia un valor y calcula una nueva predicción con el mismo modelo.</small></span><span class="journey-arrow" aria-hidden="true">↗</span></a>
+    <a href="{% url 'reportes' %}"><span class="journey-index">03</span><span><strong>Revisa los casos</strong><small>Explora ejemplos y resultados guardados durante tu sesión.</small></span><span class="journey-arrow" aria-hidden="true">↗</span></a>
+  </div>
 </section>
-<section class="panel recent-panel"><div class="panel-heading"><div><span class="eyebrow">ACTIVIDAD</span><h2>Solicitudes recientes</h2></div><a class="text-link" href="{% url 'reportes' %}">Ver todas <span>→</span></a></div><div class="table-scroll"><table class="data-table"><thead><tr><th>CASO</th><th>ID</th><th>PRÉSTAMO</th><th>PUNTAJE</th><th>RESULTADO</th></tr></thead><tbody>{% for row in recent %}<tr><td><span class="case-avatar">{{ row.name|slice:':1' }}</span><strong>{{ row.name }}</strong></td><td class="mono">{{ row.dni }}</td><td>{{ row.loan_amount|intcomma }}</td><td>{{ row.cibil_score }}</td><td><span class="status {% if row.estado == 'Aprobado' %}approved{% else %}denied{% endif %}"><span></span>{{ row.estado }}</span></td></tr>{% endfor %}</tbody></table></div></section>
+
+<section class="overview" aria-labelledby="overview-title">
+  <div class="overview-intro"><span class="section-tag"><span>03 /</span> PANORAMA</span><h2 id="overview-title">Una muestra para empezar.</h2><p>Los casos de ejemplo dan contexto desde la primera visita. Tus nuevas consultas se incorporan a este panorama durante la sesión.</p><a class="text-link" href="{% url 'reporte_global' %}">Abrir reporte global ↗</a></div>
+  <div class="overview-numbers" aria-label="Indicadores de casos disponibles"><div><span>CASOS DISPONIBLES</span><strong>{{ metrics.total }}</strong></div><div><span>RESULTADOS APROBADOS</span><strong>{{ metrics.rate }}%</strong></div><div><span>PUNTAJE PROMEDIO</span><strong>{{ metrics.average_score }}</strong></div><div><span>MONTO SOLICITADO</span><strong>{{ metrics.amount_short }}</strong></div></div>
+</section>
+
+<section class="recent-section" aria-labelledby="recent-title"><div class="section-heading editorial-heading"><div><span class="section-tag"><span>04 /</span> CASOS</span><h2 id="recent-title">Solicitudes recientes</h2></div><a class="text-link" href="{% url 'reportes' %}">Ver todos los casos ↗</a></div><div class="table-scroll"><table class="data-table"><thead><tr><th>CASO</th><th>ID</th><th>PRÉSTAMO</th><th>PUNTAJE</th><th>RESULTADO</th></tr></thead><tbody>{% for row in recent %}<tr><td><strong>{{ row.name }}</strong></td><td class="mono">{{ row.dni }}</td><td>{{ row.loan_amount|intcomma }}</td><td>{{ row.cibil_score }}</td><td><span class="status {% if row.estado == 'Aprobado' %}approved{% else %}denied{% endif %}"><span></span>{{ row.estado }}</span></td></tr>{% endfor %}</tbody></table></div></section>
 {% endblock %}

@@ -49,8 +49,36 @@ class DemoFlowTests(SimpleTestCase):
         self.assertEqual(self.client.get(reverse("home")).status_code, 200)
         response = self.client.post(reverse("consulta_individual"), sample_case())
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "PROBABILIDAD DE APROBACIÓN")
+        self.assertContains(response, "Estimación del modelo")
         self.assertIn("pending_case", self.client.session)
+
+    def test_scenario_recomputes_both_predictions_without_saving(self):
+        base = sample_case()
+        response = self.client.post(reverse("simular_escenario"), {
+            **base, "variable": "prestamo", "valor": "40000000",
+        })
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn(data["actual"]["estado"], ("Aprobado", "Denegado"))
+        self.assertIn(data["escenario"]["estado"], ("Aprobado", "Denegado"))
+        self.assertAlmostEqual(
+            data["escenario"]["probabilidad"] - data["actual"]["probabilidad"],
+            data["diferencia"], places=2,
+        )
+        self.assertNotIn("pending_case", self.client.session)
+        self.assertNotIn("history", self.client.session)
+
+    def test_scenario_rejects_invalid_changes_before_inference(self):
+        with patch("loans.views.predecir") as predict:
+            invalid = self.client.post(reverse("simular_escenario"), {
+                **sample_case(), "variable": "credito", "valor": "1001",
+            })
+            unsupported = self.client.post(reverse("simular_escenario"), {
+                **sample_case(), "variable": "banco", "valor": "1000",
+            })
+        self.assertEqual(invalid.status_code, 400)
+        self.assertEqual(unsupported.status_code, 400)
+        predict.assert_not_called()
 
     def test_save_uses_server_prediction_and_session_history(self):
         self.client.post(reverse("consulta_individual"), sample_case())
@@ -80,6 +108,7 @@ class DemoFlowTests(SimpleTestCase):
         from django.test import Client
         strict = Client(enforce_csrf_checks=True)
         self.assertEqual(strict.post(reverse("guardar_consulta_individual"), "{}", content_type="application/json").status_code, 403)
+        self.assertEqual(strict.post(reverse("simular_escenario"), sample_case()).status_code, 403)
 
     def test_batch_template_and_export(self):
         book = Workbook()
