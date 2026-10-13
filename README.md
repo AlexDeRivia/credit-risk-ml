@@ -172,8 +172,3 @@ El [notebook original](test/ModeloPestamosPY001.ipynb) conserva el experimento d
 © 2026 Alex Alcantara. Código publicado para consulta y evaluación del proyecto. No se concede una licencia general para su reutilización o redistribución. Las dependencias y recursos de terceros conservan sus respectivas licencias.
 
 ---
-
-<div align="center">
-  <strong>Diseñado y desarrollado por <a href="https://github.com/AlexDeRivia">AlexDeRivia</a>.</strong><br>
-  <a href="https://credit-risk-ml-29p9.onrender.com/">Explorar Nexo</a>
-</div>
