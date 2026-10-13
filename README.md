@@ -170,5 +170,3 @@ El [notebook original](test/ModeloPestamosPY001.ipynb) conserva el experimento d
 ## Uso del código
 
 © 2026 Alex Alcantara. Código publicado para consulta y evaluación del proyecto. No se concede una licencia general para su reutilización o redistribución. Las dependencias y recursos de terceros conservan sus respectivas licencias.
-
----
