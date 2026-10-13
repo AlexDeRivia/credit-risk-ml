@@ -167,6 +167,10 @@ Nexo es un proyecto personal de portafolio con identidad independiente de cualqu
 
 El [notebook original](test/ModeloPestamosPY001.ipynb) conserva el experimento de entrenamiento. Sus resultados de prueba no se presentan aquí como desempeño en población real. El dataset de origen no está incluido en el repositorio.
 
+## Uso del código
+
+© 2026 Alex Alcantara. Código publicado para consulta y evaluación del proyecto. No se concede una licencia general para su reutilización o redistribución. Las dependencias y recursos de terceros conservan sus respectivas licencias.
+
 ---
 
 <div align="center">
