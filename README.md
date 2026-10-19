@@ -1,7 +1,6 @@
 <div align="center">
   <img src="static/img/favicon.svg" width="56" alt="Símbolo de Nexo">
   <h1>Nexo</h1>
-  <p><strong>El riesgo, a la vista.</strong></p>
   <p>Una aplicación para evaluar perfiles crediticios, comparar escenarios y entender qué datos llegan al modelo.</p>
   <p>
     <a href="https://credit-risk-ml-29p9.onrender.com/">Abrir la aplicación</a>
