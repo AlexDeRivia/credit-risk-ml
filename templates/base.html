@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f7f7f3">
+  <meta name="theme-color" content="#f2f3f1">
   <title>{% block title %}Nexo · Riesgo crediticio{% endblock %}</title>
   <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
@@ -13,7 +13,7 @@
 <body>
   <div class="site-shell">
     <header class="site-header">
-      <a class="site-brand" href="{% url 'home' %}" aria-label="Nexo, inicio"><span class="brand-symbol" aria-hidden="true">N<span>.</span></span><span class="brand-name">Nexo <small>Riesgo crediticio</small></span></a>
+      <a class="site-brand" href="{% url 'home' %}" aria-label="Nexo, inicio"><span class="brand-symbol" aria-hidden="true">N<span>.</span></span><span class="brand-name">Nexo <small>Laboratorio de riesgo</small></span></a>
       <button class="menu-button" id="menu-toggle" type="button" aria-label="Abrir menú" aria-controls="main-nav" aria-expanded="false">Menú <span aria-hidden="true">☰</span></button>
       <nav class="main-nav" id="main-nav" aria-label="Navegación principal">
         <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}" {% if request.resolver_match.url_name == 'home' %}aria-current="page"{% endif %}>Inicio</a>

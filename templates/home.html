@@ -4,31 +4,41 @@
 {% block content %}
 <section class="home-hero" aria-labelledby="hero-title">
   <div class="hero-copy">
-    <span class="section-tag"><span>01 /</span> ANALIZAR CON CONTEXTO</span>
-    <h1 id="hero-title">El riesgo,<br><em>a la vista.</em></h1>
-    <p>Once variables entran al modelo. Una lectura clara sale de él. Evalúa un perfil y observa cómo cambia la estimación al modificar un escenario.</p>
-    <div class="hero-actions"><a class="button primary" href="{% url 'consulta_individual' %}">Evaluar un caso <span aria-hidden="true">↗</span></a><a class="text-link" href="#como-funciona">Ver el recorrido <span aria-hidden="true">↓</span></a></div>
+    <p class="section-tag">Un laboratorio para leer el riesgo</p>
+    <h1 id="hero-title">La decisión empieza antes del resultado.</h1>
+    <p class="hero-lede">Un perfil entra al modelo. Nexo te deja ver las variables, interpretar su estimación y probar cómo cambia con otro escenario.</p>
+    <div class="hero-actions">
+      <a class="button primary" href="{% url 'consulta_individual' %}">Evaluar un caso <span aria-hidden="true">↗</span></a>
+      <a class="text-link" href="#como-funciona">Entender el recorrido</a>
+    </div>
+    <p class="hero-footnote">Random Forest · 11 variables de entrada</p>
   </div>
-  <div class="hero-aside" aria-label="Ficha del modelo">
-    <div class="hero-aside-top"><span>NEXO / MODELO ACTIVO</span><span class="model-dot" aria-hidden="true"></span></div>
-    <div class="hero-aside-body"><span class="hero-big-number">11<span>.</span></span><p>variables para leer un perfil financiero y estimar su resultado.</p></div>
-    <div class="hero-aside-bottom"><span>Random Forest · inferencia · comparación</span><span aria-hidden="true">↗</span></div>
+  <div class="signal-board" aria-label="Recorrido de las variables a través del modelo">
+    <div class="signal-board-head"><span>Dentro de una evaluación</span><span class="signal-live"><i aria-hidden="true"></i> Modelo activo</span></div>
+    <div class="signal-board-body">
+      <div class="signal-source"><span class="signal-caption">Perfil de entrada</span><div class="signal-inputs" aria-label="Once variables recibidas por el modelo">
+        <span>Dependientes</span><span>Ingreso</span><span>Préstamo</span><span>Plazo</span><span>Puntaje</span><span>Activo residencial</span><span>Activo comercial</span><span>Activo de lujo</span><span>Activo bancario</span><span>Educación</span><span>Independiente</span>
+      </div></div>
+      <div class="signal-path" aria-hidden="true"><span></span></div>
+      <div class="signal-engine"><span class="signal-caption">Inferencia</span><strong>Random<br>Forest</strong><small>11 señales → una estimación</small></div>
+    </div>
+    <div class="signal-board-foot"><span class="signal-output-mark" aria-hidden="true"></span><span>Clasificación y estimación listas para explorar</span><span aria-hidden="true">↗</span></div>
   </div>
 </section>
 
 <section class="journey" id="como-funciona" aria-labelledby="journey-title">
-  <div class="section-heading editorial-heading"><span class="section-tag"><span>02 /</span> EL RECORRIDO</span><h2 id="journey-title">No solo un resultado.<br><em>Una lectura que puedes explorar.</em></h2></div>
+  <div class="section-heading"><div><p class="section-tag">Cómo se usa</p><h2 id="journey-title">Del dato a una lectura que puedes cuestionar.</h2></div><p class="section-intro">Cada paso conserva el contexto del anterior para que el resultado sea algo más que una etiqueta.</p></div>
   <div class="journey-list">
-    <a href="{% url 'consulta_individual' %}"><span class="journey-index">01</span><span><strong>Evalúa un perfil</strong><small>Completa un caso o carga un ejemplo para probar el modelo.</small></span><span class="journey-arrow" aria-hidden="true">↗</span></a>
-    <a href="{% url 'consulta_individual' %}"><span class="journey-index">02</span><span><strong>Compara escenarios</strong><small>Cambia un valor y calcula una nueva predicción con el mismo modelo.</small></span><span class="journey-arrow" aria-hidden="true">↗</span></a>
-    <a href="{% url 'reportes' %}"><span class="journey-index">03</span><span><strong>Revisa los casos</strong><small>Explora ejemplos y resultados guardados durante tu sesión.</small></span><span class="journey-arrow" aria-hidden="true">↗</span></a>
+    <a href="{% url 'consulta_individual' %}"><span class="journey-index">1</span><span><strong>Construye un perfil</strong><small>Completa las variables o carga un caso de ejemplo.</small></span><span class="journey-arrow" aria-hidden="true">↗</span></a>
+    <a href="{% url 'consulta_individual' %}"><span class="journey-index">2</span><span><strong>Interroga al modelo</strong><small>Lee la clasificación y compara una segunda inferencia.</small></span><span class="journey-arrow" aria-hidden="true">↗</span></a>
+    <a href="{% url 'reportes' %}"><span class="journey-index">3</span><span><strong>Explora el conjunto</strong><small>Revisa los casos disponibles y su panorama agregado.</small></span><span class="journey-arrow" aria-hidden="true">↗</span></a>
   </div>
 </section>
 
 <section class="overview" aria-labelledby="overview-title">
-  <div class="overview-intro"><span class="section-tag"><span>03 /</span> PANORAMA</span><h2 id="overview-title">Una muestra para empezar.</h2><p>Los casos de ejemplo dan contexto desde la primera visita. Tus nuevas consultas se incorporan a este panorama durante la sesión.</p><a class="text-link" href="{% url 'reporte_global' %}">Abrir reporte global ↗</a></div>
-  <div class="overview-numbers" aria-label="Indicadores de casos disponibles"><div><span>CASOS DISPONIBLES</span><strong>{{ metrics.total }}</strong></div><div><span>RESULTADOS APROBADOS</span><strong>{{ metrics.rate }}%</strong></div><div><span>PUNTAJE PROMEDIO</span><strong>{{ metrics.average_score }}</strong></div><div><span>MONTO SOLICITADO</span><strong>{{ metrics.amount_short }}</strong></div></div>
+  <div class="overview-intro"><p class="section-tag">Datos para empezar</p><h2 id="overview-title">El sistema ya tiene contexto.</h2><p>Los casos de ejemplo están disponibles desde la primera visita. Tus consultas se suman a este panorama durante la sesión.</p><a class="text-link" href="{% url 'reporte_global' %}">Abrir reporte global</a></div>
+  <div class="overview-numbers" aria-label="Indicadores de casos disponibles"><div><span>Casos disponibles</span><strong>{{ metrics.total }}</strong></div><div><span>Resultados aprobados</span><strong>{{ metrics.rate }}%</strong></div><div><span>Puntaje promedio</span><strong>{{ metrics.average_score }}</strong></div><div><span>Monto solicitado</span><strong>{{ metrics.amount_short }}</strong></div></div>
 </section>
 
-<section class="recent-section" aria-labelledby="recent-title"><div class="section-heading editorial-heading"><div><span class="section-tag"><span>04 /</span> CASOS</span><h2 id="recent-title">Solicitudes recientes</h2></div><a class="text-link" href="{% url 'reportes' %}">Ver todos los casos ↗</a></div><div class="table-scroll"><table class="data-table"><thead><tr><th>CASO</th><th>ID</th><th>PRÉSTAMO</th><th>PUNTAJE</th><th>RESULTADO</th></tr></thead><tbody>{% for row in recent %}<tr><td><strong>{{ row.name }}</strong></td><td class="mono">{{ row.dni }}</td><td>{{ row.loan_amount|intcomma }}</td><td>{{ row.cibil_score }}</td><td><span class="status {% if row.estado == 'Aprobado' %}approved{% else %}denied{% endif %}"><span></span>{{ row.estado }}</span></td></tr>{% endfor %}</tbody></table></div></section>
+<section class="recent-section" aria-labelledby="recent-title"><div class="section-heading"><div><p class="section-tag">Actividad</p><h2 id="recent-title">Solicitudes recientes</h2></div><a class="text-link" href="{% url 'reportes' %}">Ver todos los casos</a></div><div class="table-scroll"><table class="data-table"><thead><tr><th>Caso</th><th>ID</th><th>Préstamo</th><th>Puntaje</th><th>Resultado</th></tr></thead><tbody>{% for row in recent %}<tr><td><strong>{{ row.name }}</strong></td><td class="mono">{{ row.dni }}</td><td>{{ row.loan_amount|intcomma }}</td><td>{{ row.cibil_score }}</td><td><span class="status {% if row.estado == 'Aprobado' %}approved{% else %}denied{% endif %}"><span></span>{{ row.estado }}</span></td></tr>{% endfor %}</tbody></table></div></section>
 {% endblock %}
